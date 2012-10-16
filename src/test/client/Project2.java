@@ -49,10 +49,17 @@ public class Project2 implements EntryPoint, ClickHandler
    TextBox userBox = new TextBox();
    PasswordTextBox passBox = new PasswordTextBox();
    String urlBase = "http://localhost:3000";
+   Button addButton = new Button("Add");
+   TextBox nameEditBox = new TextBox();
+   TextBox usernameEditBox = new TextBox();
+   TextBox deptEditBox = new TextBox();
+   Button editSubmitButton = new Button("Submit");
    public void onModuleLoad()
    {
       RootPanel.get().add(mainPanel);
       loginButton.addClickHandler(this); // must be here not in login
+      addButton.addClickHandler(this);
+      editSubmitButton.addClickHandler(this);
       login();
       //String url = "http://localhost:3000/workers.json";
       //getRequest(url);
@@ -67,10 +74,25 @@ public class Project2 implements EntryPoint, ClickHandler
             URL.encode(userBox.getText()) + "&" +
             URL.encode("password") + "=" +
             URL.encode(passBox.getText());
-         postRequest(url,encData);
+         postRequest(url,encData,"login");
+      }
+      else if (source == addButton) {
+         editWindow("","","");
+      }
+      else if (source == editSubmitButton) {
+
+         String url = urlBase + "/workers/create";
+         String encData = URL.encode("name") + "=" +
+            URL.encode(nameEditBox.getText()) + "&" +
+            URL.encode("username") + "=" +
+            URL.encode(usernameEditBox.getText()) + "&" +
+            URL.encode("department") + "=" +
+            URL.encode(deptEditBox.getText());
+         postRequest(url,encData,"addWorker");
       }
    }
-   private void postRequest(String url, String data)
+   private void postRequest(String url, String data, 
+      final String postType)
    {
       final RequestBuilder rb =
          new RequestBuilder(RequestBuilder.POST,url);
@@ -87,15 +109,22 @@ public class Project2 implements EntryPoint, ClickHandler
             public void onResponseReceived(final Request request,
                final Response response)
             {
-               int id = Integer.parseInt(response.getText().trim());
-               if (id == 1) {
+               if (postType.equals("login")) {
+                  int id = Integer.parseInt(response.getText().trim());
+                  if (id == 1) {
+                     mainPanel.clear();
+                     String url = urlBase + "/workers.json";
+                     getRequest(url);
+                  }
+                  else {
+                     userBox.setText("");
+                     passBox.setText("");
+                  }
+               }
+               else if (postType.equals("addWorker")) {
                   mainPanel.clear();
                   String url = urlBase + "/workers.json";
                   getRequest(url);
-               }
-               else {
-                  userBox.setText("");
-                  passBox.setText("");
                }
             }
          });
@@ -127,6 +156,31 @@ public class Project2 implements EntryPoint, ClickHandler
       catch (final Exception e) {
          Window.alert(e.getMessage());
       }
+   }
+   private void editWindow(String nameStr, String user, String dept)
+   {
+      mainPanel.clear();
+      VerticalPanel editPanel = new VerticalPanel();
+      HorizontalPanel row1 = new HorizontalPanel();
+      Label nameLabel = new Label("Name: ");
+      row1.add(nameLabel);
+      row1.add(nameEditBox);
+      nameEditBox.setText(nameStr);
+      editPanel.add(row1);
+      HorizontalPanel row2 = new HorizontalPanel();
+      Label userLabel = new Label("Username: ");
+      row2.add(userLabel);
+      row2.add(usernameEditBox);
+      usernameEditBox.setText(user);
+      editPanel.add(row2);
+      HorizontalPanel row3 = new HorizontalPanel();
+      Label deptLabel = new Label("Department: ");
+      row3.add(deptLabel);
+      row3.add(deptEditBox);
+      deptEditBox.setText(dept);
+      editPanel.add(row3);
+      editPanel.add(editSubmitButton);
+      mainPanel.add(editPanel);
    }
    private JsArray<Worker> getJSONData(String json)
    {
@@ -189,6 +243,7 @@ public class Project2 implements EntryPoint, ClickHandler
       table.addColumn(deptCol,"Department");
       table.setRowCount(workers.size(),true);
       table.setRowData(0,workers);
+      mainPanel.add(addButton);
       mainPanel.add(table);
    }
    private void login()
