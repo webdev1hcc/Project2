@@ -42,7 +42,7 @@ public class Project2 implements EntryPoint, ClickHandler
          this.id = id;
       }
    }
-   ArrayList<MyWorker> workers = new ArrayList<MyWorker>();
+   ArrayList<MyWorker> workers;
    JsArray<Worker> jsonData;
    VerticalPanel mainPanel = new VerticalPanel();
    Button loginButton = new Button("Login");
@@ -52,6 +52,7 @@ public class Project2 implements EntryPoint, ClickHandler
    Button addButton = new Button("Add");
    TextBox nameEditBox = new TextBox();
    TextBox usernameEditBox = new TextBox();
+   PasswordTextBox passEditBox = new PasswordTextBox();
    TextBox deptEditBox = new TextBox();
    Button editSubmitButton = new Button("Submit");
    public void onModuleLoad()
@@ -77,7 +78,7 @@ public class Project2 implements EntryPoint, ClickHandler
          postRequest(url,encData,"login");
       }
       else if (source == addButton) {
-         editWindow("","","");
+         editWindow("","","","");
       }
       else if (source == editSubmitButton) {
 
@@ -86,6 +87,8 @@ public class Project2 implements EntryPoint, ClickHandler
             URL.encode(nameEditBox.getText()) + "&" +
             URL.encode("username") + "=" +
             URL.encode(usernameEditBox.getText()) + "&" +
+            URL.encode("password") + "=" +
+            URL.encode(passEditBox.getText()) + "&" +
             URL.encode("department") + "=" +
             URL.encode(deptEditBox.getText());
          postRequest(url,encData,"addWorker");
@@ -157,7 +160,8 @@ public class Project2 implements EntryPoint, ClickHandler
          Window.alert(e.getMessage());
       }
    }
-   private void editWindow(String nameStr, String user, String dept)
+   private void editWindow(String nameStr, String user, 
+      String pass, String dept)
    {
       mainPanel.clear();
       VerticalPanel editPanel = new VerticalPanel();
@@ -173,6 +177,12 @@ public class Project2 implements EntryPoint, ClickHandler
       row2.add(usernameEditBox);
       usernameEditBox.setText(user);
       editPanel.add(row2);
+      HorizontalPanel row2b = new HorizontalPanel();
+      Label passLabel = new Label("Password: ");
+      row2b.add(passLabel);
+      row2b.add(passEditBox);
+      passEditBox.setText(pass);
+      editPanel.add(row2b);
       HorizontalPanel row3 = new HorizontalPanel();
       Label deptLabel = new Label("Department: ");
       row3.add(deptLabel);
@@ -188,6 +198,8 @@ public class Project2 implements EntryPoint, ClickHandler
    }
    private void showWorkersCellTable(String json)
    {
+      //jsonData = null;
+      workers = new ArrayList<MyWorker>();
       jsonData = getJSONData(json);
       Worker worker = null;
       for (int i = 1; i < jsonData.length(); i++) {
